@@ -1,0 +1,139 @@
+type Chef
+    @model 
+    @key(name: "byUsername", fields: ["username", "n_followers"])
+    @key(name: "byNFollowers", fields: ["n_followers", "username"])
+    {
+    id: ID!
+    username: String!
+    image: String!
+    biography: String!
+    n_followers: Int
+    n_following: Int
+    n_remakes: Int
+    # posts: [Post] @connection(keyName: "byChef", fields: ["id"])
+    # idols: [Follow] @connection(keyName: "byFollower", fields: ["id"])
+    # followers: [Follow] @connection(keyName: "byIdol", fields: ["id"])
+    # senders: [Notification] @connection(keyName: "byReceiver", fields: ["id"])
+    # receivers: [Notification] @connection(keyName: "bySender", fields: ["id"])
+    # remarks: [Remark] @connection(keyName: "byChef", fields: ["id"])
+}
+
+enum FollowType {
+    REQUEST
+    FOLLOW
+}
+
+type Follow 
+    @model 
+    @key(name: "byIdol", fields: ["idolID", "followerID", "type"])
+    @key(name: "byFollower", fields: ["followerID", "idolID", "type"])
+    @key(name: "bytype", fields: ["type"])
+    {
+    id: ID!
+    type: FollowType!
+    idolID: ID!
+    followerID: ID!
+    idol: Chef @connection(fields: ["idolID"])
+    follower: Chef @connection(fields: ["followerID"])
+}
+
+enum PostType {
+    ORIGINAL
+    REMAKE
+}
+
+type Post 
+    @model
+    @key(name: "byType", fields: ["type"])  
+    @key(name: "byDate", fields: ["createdAt", "type"])    
+    @key(name: "byTitle", fields: ["title", "rating", "type"])
+    @key(name: "byRating", fields: ["rating", "type"]) 
+    @key(name: "byChef", fields: ["chefID"])
+    @key(name: "byOriginal", fields: ["originalID"])
+    @key(name: "byHashtags", fields: ["hashtags", "type"])
+    {
+    id: ID!
+    type: PostType!
+    createdAt: AWSDateTime!
+    title: String
+    caption: String
+    image: String!
+    serves: Int
+    cook_time: Int
+    rating: Int
+    n_likes: Int
+    n_comments: Int
+    n_tips: Int
+    procedure: [String]
+    hashtags: String
+    chefID: ID!
+    originalID: ID!
+    chef: Chef @connection(fields: ["chefID"])
+    # original: Post @connection(fields: ["originalID"])
+    remakes: [Post] @connection(keyName: "byOriginal", fields: ["id"])
+    # remarks: [Remark] @connection(keyName: "byPost", fields: ["id"])
+}
+
+enum RemarkType {
+    LIKE
+    COMMENT
+    TIP
+    SAVE
+}
+
+type Remark 
+    @model 
+    @key(name: "byType", fields: ["type"])
+    @key(name: "byDate", fields: ["createdAt", "type"])
+    # @key(name: "byChef", fields: ["chefID", "postID", "type"])
+    @key(name: "byPost", fields: ["postID", "chefID", "type"]) 
+    @key(name: "byRemake", fields: ["remakeID", "type"])
+    @key(name: "byChef", fields: ["chefID"])
+    {
+    id: ID!
+    type: RemarkType!
+    createdAt: AWSDateTime!
+    text: String
+    chefID: ID!
+    postID: ID!
+    chef: Chef @connection(fields: ["chefID"])
+    post: Post @connection(fields: ["postID"])
+    remakeID: ID
+}
+
+enum NotificationType {
+    COMMENT
+    CAPTION
+    REMADE
+    REQUEST
+    ACCEPT
+    LIKED
+    COMMENTED
+}
+
+type Notification 
+    @model
+    @key(name: "bySender", fields: ["senderID", "receiverID", "createdAt", "type"])
+    @key(name: "byType", fields: ["type"])
+    @key(name: "byReceiver", fields: ["receiverID", "senderID", "createdAt", "type"])
+    @key(name: "byDate", fields: ["createdAt", "type"])
+    @key(name: "byPost", fields: ["postID", "type"])
+    {
+    id: ID!
+    createdAt: AWSDateTime!
+    type: NotificationType!
+    senderID: ID!
+    receiverID: ID!
+    sender: Chef @connection(fields: ["senderID"])
+    receiver: Chef @connection(fields: ["receiverID"])
+    postID: ID
+    text: String
+} 
+
+type Hashtag 
+    @model
+    @key(name: "byName", fields: ["name"])    
+    {
+    id: ID!
+    name: String!
+} 
